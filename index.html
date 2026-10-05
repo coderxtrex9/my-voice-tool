@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private TTS Console</title>
+    <style>
+        body { background-color: #121212; color: #E0E0E0; font-family: sans-serif; padding: 20px; margin: 0; }
+        .container { max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
+        h2 { color: #FFF; margin-bottom: 5px; }
+        label { font-size: 14px; font-weight: bold; color: #BB86FC; }
+        input, textarea, button { width: 100%; padding: 12px; box-sizing: border-box; border-radius: 6px; border: 1px solid #333; background: #1E1E1E; color: #FFF; font-size: 16px; }
+        textarea { height: 120px; resize: none; }
+        button { background: #BB86FC; color: #121212; font-weight: bold; cursor: pointer; border: none; margin-top: 10px; }
+        button:active { background: #9965db; }
+        audio { width: 100%; margin-top: 15px; display: none; }
+        .hint { font-size: 12px; color: #888; margin-top: -10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Anonymous TTS Engine</h2>
+    
+    <label>1. API Key</label>
+    <input type="password" id="apiKey" placeholder="Paste your fish.audio API Key here">
+    
+    <label>2. Text Script</label>
+    <textarea id="textInput" placeholder="Type here. Use structural prompts like: [sigh] I am completely tired of this... [laughter] but we keep moving."></textarea>
+    <p class="hint">Use brackets [laughter], [sigh], [whisper] to force human pacing.</p>
+    
+    <label>3. Voice ID (Optional)</label>
+    <input type="text" id="voiceId" placeholder="Leave blank for standard unique voice">
+
+    <button onclick="generateAudio()">Generate Premium Audio</button>
+    
+    <audio id="audioPlayer" controls></audio>
+</div>
+
+<script>
+async function generateAudio() {
+    const apiKey = document.getElementById('apiKey').value.trim();
+    const text = document.getElementById('textInput').value.trim();
+    const voiceId = document.getElementById('voiceId').value.trim();
+    const player = document.getElementById('audioPlayer');
+
+    if (!apiKey || !text) {
+        alert("API Key and Text Script cannot be empty.");
+        return;
+    }
+
+    const url = "https://fish.audio";
+    const payload = {
+        text: text,
+        reference_id: voiceId ? voiceId : null,
+        format: "mp3",
+        latency: "normal"
+    };
+
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${apiKey}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Server returned ${response.status}: ${errorText}`);
+        }
+
+        const blob = await response.blob();
+        const audioUrl = URL.createObjectURL(blob);
+        player.src = audioUrl;
+        player.style.display = "block";
+        player.play();
+    } catch (error) {
+        alert("Execution Error: " + error.message);
+    }
+}
+</script>
+
+</body>
+</html>
