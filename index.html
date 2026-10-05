@@ -49,12 +49,14 @@ async function generateAudio() {
         return;
     }
 
-    const url = "https://fish.audio";
+    const url = "https://api.fish.audio/v1/tts";
+    
+    // Explicit model payload layout needed for free-tier endpoint resolution
     const payload = {
         text: text,
+        model: "s2.1-pro-free",
         reference_id: voiceId ? voiceId : null,
-        format: "mp3",
-        latency: "normal"
+        format: "mp3"
     };
 
     try {
@@ -69,7 +71,7 @@ async function generateAudio() {
 
         if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(`Server returned ${response.status}: ${errorText}`);
+            throw new Error(`Server status ${response.status}: ${errorText}`);
         }
 
         const blob = await response.blob();
@@ -78,7 +80,7 @@ async function generateAudio() {
         player.style.display = "block";
         player.play();
     } catch (error) {
-        alert("Execution Error: " + error.message);
+        alert("System Check: If 'failed to fetch' persists, your mobile browser engine requires a CORS extension or you must run via the direct terminal. Error detail: " + error.message);
     }
 }
 </script>
